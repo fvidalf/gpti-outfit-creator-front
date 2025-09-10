@@ -186,7 +186,7 @@ function App() {
         {/* Content Section */}
         {selectedItems.length > 0 ? (
           /* Selected Items Grid */
-            <div className="grid grid-cols-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
               {selectedItems.map((item) => (
                 <Card key={item.id} className="border-0 rounded-none shadow-none">
                   <CardContent className="p-0">

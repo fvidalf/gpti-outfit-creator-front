@@ -33,6 +33,15 @@ const Textarea = React.forwardRef<
     adjustHeight()
   }, [props.value, adjustHeight])
 
+  React.useEffect(() => {
+    const handleResize = () => {
+      adjustHeight()
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [adjustHeight])
+
   return (
     <textarea
       className={cn(
