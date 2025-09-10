@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { Sparkles, Menu } from "lucide-react"
+import { Menu } from "lucide-react"
 
 // Import outfit sample images
 import outfit1 from '@/assets/samples/outfit1.png'
@@ -21,6 +21,7 @@ function App() {
   const [prompt, setPrompt] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [selectedItems, setSelectedItems] = useState<any[]>([])
+  const [selectedSizes, setSelectedSizes] = useState<{[key: number]: string}>({})
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Infinite scroll effect
@@ -74,6 +75,7 @@ function App() {
       comment: 'Un top suelto y cómodo perfecto para el calor',
       title: "Polera con motivo estampado Loose Fit",
       price: 8990,
+      sizes: ['XS', 'S', 'M', 'L', 'XL'],
     },
     {
       id: 2,
@@ -81,6 +83,7 @@ function App() {
       comment: 'Los shorts que buscabas. Estos quedan perfectos con el conjunto',
       title: 'Shorts beige de algodón',
       price: 7990,
+      sizes: ['28', '30', '32', '34', '36', '38'],
     },
     {
       id: 3,
@@ -88,12 +91,32 @@ function App() {
       comment: 'Calcetas que se lucen muy bien con pantalones cortos',
       title: 'Calcetas blancas deportivas',
       price: 3990,
+      sizes: ['35-37', '38-40', '41-43', '44-46'],
     }
   ]
 
   // Function to format price with thousands separators (dots)
   const formatPrice = (price: number): string => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  // Handle size selection
+  const handleSizeSelect = (itemId: number, size: string) => {
+    setSelectedSizes(prev => ({
+      ...prev,
+      [itemId]: size
+    }))
+  }
+
+  // Handle add to cart
+  const handleAddToCart = (item: any) => {
+    const selectedSize = selectedSizes[item.id]
+    if (!selectedSize) {
+      alert('Por favor selecciona una talla')
+      return
+    }
+    console.log('Adding to cart:', { ...item, size: selectedSize })
+    // Here you would implement the actual add to cart logic
   }
 
   const handleSubmit = async () => {
@@ -122,9 +145,20 @@ function App() {
             <a href="#" className="hover:text-black transition-colors">NIÑOS</a>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.href = window.location.href}>
           <span className="text-purple-500 font-medium">¿QUÉ BUSCAS?</span>
-          <Sparkles className="w-4 h-4 text-purple-500" />
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sparklesGradientNav" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#5170ff" />
+                <stop offset="100%" stopColor="#ff66c4" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 22.5l-.394-1.933a2.25 2.25 0 00-1.423-1.423L12.75 18.75l1.933-.394a2.25 2.25 0 001.423-1.423L16.5 15l.394 1.933a2.25 2.25 0 001.423 1.423l1.933.394-1.933.394a2.25 2.25 0 00-1.423 1.423z"
+              fill="url(#sparklesGradientNav)"
+            />
+          </svg>
         </div>
       </nav>
 
@@ -173,11 +207,11 @@ function App() {
 
         {/* Single Status Text - shows different messages based on state */}
         <div className="mb-8">
-          <p className="text-xl text-black mb-8 text-left">
+          <p className="text-xl text-black text-left">
             {isLoading 
               ? 'Estoy buscando tu outfit perfecto...'
               : selectedItems.length > 0 
-                ? 'Encontré esto para ti'
+                ? 'Encontré esto para ti, ¿qué te parece?'
                 : '¡Hola! Dime, ¿qué estás buscando?'
             }
           </p>
@@ -188,17 +222,49 @@ function App() {
           /* Selected Items Grid */
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
               {selectedItems.map((item) => (
-                <Card key={item.id} className="border-0 rounded-none shadow-none">
-                  <CardContent className="p-0">
+                <Card key={item.id} className="border-0 rounded-none shadow-none flex flex-col h-full">
+                  <CardContent className="p-0 flex flex-col h-full">
                     <img
                       src={item.src}
                       alt={item.description}
                       className="w-full aspect-square object-cover"
                     />
-                    <div className="p-4">
-                      <h3 className="font-normal text-sm uppercase">{item.title}</h3>
-                      <h3 className="font-bold text-sm mb-2">${formatPrice(item.price)}</h3>
-                      <p className="text-gray-600 ">{item.comment}</p>
+                    <div className="p-4 flex flex-col flex-grow">
+                      <div className="flex-grow">
+                        <h3 className="font-normal text-sm uppercase">{item.title}</h3>
+                        <h3 className="font-bold text-sm mb-2">${formatPrice(item.price)}</h3>
+                        <p className="text-gray-600 text-sm h-12 overflow-hidden">{item.comment}</p>
+                      </div>
+                      
+                      {/* Size Selector */}
+                      <div className="mt-4">
+                        <p className="text-sm font-medium mb-2 uppercase">Talla</p>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {item.sizes.map((size: string) => (
+                            <button
+                              key={size}
+                              onClick={() => handleSizeSelect(item.id, size)}
+                              className={`px-3 py-1 border text-sm font-medium transition-colors ${
+                                selectedSizes[item.id] === size
+                                  ? 'bg-black text-white border-black'
+                                  : 'bg-white text-black border-gray-300 hover:border-black'
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Add to Cart Button - only show when size is selected */}
+                      {selectedSizes[item.id] && (
+                        <Button 
+                          onClick={() => handleAddToCart(item)}
+                          className="w-full bg-black hover:bg-gray-800 text-white rounded-none py-3 font-medium uppercase tracking-wide mt-auto"
+                        >
+                          Agregar al carrito
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
