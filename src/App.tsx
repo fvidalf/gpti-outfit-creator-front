@@ -555,7 +555,7 @@ function App() {
       )}
 
       {/* Estilos para el carrusel */}
-      <style jsx>{`
+      <style>{`
         .outfit-carousel {
           overflow: hidden;
           position: relative;
