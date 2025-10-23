@@ -47,7 +47,7 @@ interface LikedItem {
 function App() {
   const [prompt, setPrompt] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedItems, setSelectedItems] = useState<ProductItem[]>([])
+  const [selectedItems, setSelectedItems] = useState<any[]>([])
   const [selectedSizes, setSelectedSizes] = useState<{[key: number]: string}>({})
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [likedItems, setLikedItems] = useState<LikedItem[]>([])
@@ -64,9 +64,9 @@ function App() {
     if (!scrollElement) return
 
     let scrollAmount = 0
-    const scrollSpeed = 0.2
-    const imageWidth = 320
-    const totalImages = 6
+    const scrollSpeed = 0.2 // pixels per frame
+    const imageWidth = 320 // Updated to match new w-80 class (320px) with no gaps
+    const totalImages = 6 // Updated to match actual number of images
     const resetPoint = imageWidth * totalImages
 
     const scroll = () => {
@@ -83,7 +83,7 @@ function App() {
     const animationId = requestAnimationFrame(scroll)
     
     return () => cancelAnimationFrame(animationId)
-  }, [selectedItems.length])
+  }, [selectedItems.length]) // Re-run when state changes
 
   // Sample outfit images for the carousel
   const outfitImages = [
@@ -102,7 +102,7 @@ function App() {
   ]
 
   // Mock selected items after AI response
-  const mockSelectedItems: ProductItem[] = [
+  const mockSelectedItems = [
     {
       id: 1,
       src: topImg,
@@ -131,17 +131,7 @@ function App() {
 
   // Function to format price with thousands separators (dots)
   const formatPrice = (price: number): string => {
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-  }
-
-  // Calculate total price
-  const calculateTotal = (): number => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
-  }
-
-  // Calculate total items in cart
-  const calculateTotalItems = (): number => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0)
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
   // Check if item is liked
@@ -158,7 +148,7 @@ function App() {
   }
 
   // Handle add to cart
-  const handleAddToCart = (item: ProductItem) => {
+  const handleAddToCart = (item: any) => {
     const selectedSize = selectedSizes[item.id]
     if (!selectedSize) {
       alert('Por favor selecciona una talla')
@@ -635,7 +625,6 @@ function App() {
             )}
           </div>
         </div>
-      )}
 
       {/* Main Content */}
       {!isCartOpen && !isLikedOpen && (
@@ -721,8 +710,9 @@ function App() {
             </p>
           </div>
 
-          {/* Content Section */}
-          {selectedItems.length > 0 ? (
+        {/* Content Section */}
+        {selectedItems.length > 0 ? (
+          /* Selected Items Grid */
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
               {selectedItems.map((item) => {
                 const selectedSize = selectedSizes[item.id]
@@ -792,20 +782,20 @@ function App() {
                 )
               })}
             </div>
-          ) : (
-            <div className="w-full">
-              <div className="outfit-carousel">
-                <div className="outfit-carousel-track" ref={scrollRef}>
-                  {infiniteImages.map((image, index) => (
-                    <div key={`${image.id}-${index}`} className="outfit-image">
-                      <img
-                        src={image.src}
-                        alt={image.alt}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
+        ) : (
+          /* Outfit Carousel */
+          <div className="w-full">
+            <div className="outfit-carousel">
+              <div className="outfit-carousel-track" ref={scrollRef}>
+                {infiniteImages.map((image, index) => (
+                  <div key={`${image.id}-${index}`} className="outfit-image">
+                    <img
+                      src={image.src}
+                      alt={image.alt}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}
