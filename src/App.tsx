@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { Menu, X, ShoppingBag, ArrowLeft, CheckCircle, Heart } from "lucide-react"
+import { Menu, X, ShoppingBag, ArrowLeft, CheckCircle } from "lucide-react"
 
 // Import outfit sample images
 import outfit1 from '@/assets/samples/outfit1.png'
@@ -132,6 +132,16 @@ function App() {
   // Function to format price with thousands separators (dots)
   const formatPrice = (price: number): string => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  // Calculate total items in cart
+  const calculateTotalItems = (): number => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0)
+  }
+
+  // Calculate total price in cart
+  const calculateTotal = (): number => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
   }
 
   // Check if item is liked
@@ -625,6 +635,7 @@ function App() {
             )}
           </div>
         </div>
+      )}
 
       {/* Main Content */}
       {!isCartOpen && !isLikedOpen && (
@@ -798,7 +809,8 @@ function App() {
                 ))}
               </div>
             </div>
-          )}
+          </div>
+        )}
         </main>
       )}
 
