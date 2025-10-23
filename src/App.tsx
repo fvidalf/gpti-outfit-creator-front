@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { Menu, X, ShoppingBag, ArrowLeft, CheckCircle } from "lucide-react"
+import { Menu } from "lucide-react"
 
 // Import outfit sample images
 import outfit1 from '@/assets/samples/outfit1.png'
@@ -17,34 +17,11 @@ import topImg from '@/assets/outfit/top.png'
 import bottomImg from '@/assets/outfit/bottom.png'
 import socksImg from '@/assets/outfit/socks.png'
 
-// Types
-interface CartItem {
-  id: number
-  src: string
-  title: string
-  price: number
-  size: string
-  quantity: number
-}
-
-interface ProductItem {
-  id: number
-  src: string
-  comment: string
-  title: string
-  price: number
-  sizes: string[]
-}
-
 function App() {
   const [prompt, setPrompt] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedItems, setSelectedItems] = useState<ProductItem[]>([])
+  const [selectedItems, setSelectedItems] = useState<any[]>([])
   const [selectedSizes, setSelectedSizes] = useState<{[key: number]: string}>({})
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [isCartOpen, setIsCartOpen] = useState(false)
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
-  const [selectedGender, setSelectedGender] = useState<string>('')
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Infinite scroll effect
@@ -53,9 +30,9 @@ function App() {
     if (!scrollElement) return
 
     let scrollAmount = 0
-    const scrollSpeed = 0.2
-    const imageWidth = 320
-    const totalImages = 6
+    const scrollSpeed = 0.2 // pixels per frame
+    const imageWidth = 320 // Updated to match new w-80 class (320px) with no gaps
+    const totalImages = 6 // Updated to match actual number of images
     const resetPoint = imageWidth * totalImages
 
     const scroll = () => {
@@ -72,7 +49,7 @@ function App() {
     const animationId = requestAnimationFrame(scroll)
     
     return () => cancelAnimationFrame(animationId)
-  }, [selectedItems.length])
+  }, [selectedItems.length]) // Re-run when state changes
 
   // Sample outfit images for the carousel
   const outfitImages = [
@@ -91,7 +68,7 @@ function App() {
   ]
 
   // Mock selected items after AI response
-  const mockSelectedItems: ProductItem[] = [
+  const mockSelectedItems = [
     {
       id: 1,
       src: topImg,
@@ -120,17 +97,7 @@ function App() {
 
   // Function to format price with thousands separators (dots)
   const formatPrice = (price: number): string => {
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-  }
-
-  // Calculate total price
-  const calculateTotal = (): number => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
-  }
-
-  // Calculate total items in cart
-  const calculateTotalItems = (): number => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0)
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
   // Handle size selection
@@ -142,79 +109,14 @@ function App() {
   }
 
   // Handle add to cart
-  const handleAddToCart = (item: ProductItem) => {
+  const handleAddToCart = (item: any) => {
     const selectedSize = selectedSizes[item.id]
     if (!selectedSize) {
       alert('Por favor selecciona una talla')
       return
     }
-
-    const existingItem = cartItems.find(cartItem => 
-      cartItem.id === item.id && cartItem.size === selectedSize
-    )
-
-    if (existingItem) {
-      // Update quantity if item already exists
-      setCartItems(prev => 
-        prev.map(cartItem =>
-          cartItem.id === item.id && cartItem.size === selectedSize
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
-        )
-      )
-    } else {
-      // Add new item to cart
-      const newCartItem: CartItem = {
-        id: item.id,
-        src: item.src,
-        title: item.title,
-        price: item.price,
-        size: selectedSize,
-        quantity: 1
-      }
-      setCartItems(prev => [...prev, newCartItem])
-    }
-
-    // Show success message
-    setShowSuccessMessage(true)
-    setTimeout(() => {
-      setShowSuccessMessage(false)
-    }, 3000)
-  }
-
-  // Handle remove item from cart
-  const handleRemoveFromCart = (itemId: number, size: string) => {
-    setCartItems(prev => prev.filter(item => !(item.id === itemId && item.size === size)))
-  }
-
-  // Handle update quantity
-  const handleUpdateQuantity = (itemId: number, size: string, newQuantity: number) => {
-    if (newQuantity < 1) {
-      handleRemoveFromCart(itemId, size)
-      return
-    }
-
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === itemId && item.size === size
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
-    )
-  }
-
-  // Handle gender selection
-  const handleGenderSelect = (gender: string) => {
-    setSelectedGender(gender)
-  }
-
-  // Handle reset to main page (without losing cart)
-  const handleResetToMain = () => {
-    setSelectedItems([])
-    setPrompt('')
-    setSelectedSizes({})
-    setSelectedGender('')
-    setIsLoading(false)
+    console.log('Adding to cart:', { ...item, size: selectedSize })
+    // Here you would implement the actual add to cart logic
   }
 
   const handleSubmit = async () => {
@@ -233,264 +135,98 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Success Message */}
-      {showSuccessMessage && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-fade-in">
-          <CheckCircle className="w-5 h-5" />
-          <span>¡Tu producto ha sido añadido exitosamente!</span>
-        </div>
-      )}
-
       {/* Navigation */}
       <nav className="flex items-center justify-between px-6 py-4 border-b">
         <div className="flex items-center gap-8">
           <Menu className="w-6 h-6" />
-            <div className="flex gap-8 text-gray-600 font-medium">
-              <div 
-                className="flex items-center gap-2 cursor-pointer" 
-                onClick={handleResetToMain} // Cambiado a la nueva función
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="sparklesGradientNav" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#5170ff" />
-                      <stop offset="100%" stopColor="#ff66c4" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 22.5l-.394-1.933a2.25 2.25 0 00-1.423-1.423L12.75 18.75l1.933-.394a2.25 2.25 0 001.423-1.423L16.5 15l.394 1.933a2.25 2.25 0 001.423 1.423l1.933.394-1.933.394a2.25 2.25 0 00-1.423 1.423z"
-                    fill="url(#sparklesGradientNav)"/>
-                </svg>
-                <span className="text-purple-500 font-medium">¿QUÉ BUSCAS?</span>
-              </div>
-            </div>
+          <div className="flex gap-8 text-gray-600 font-medium">
+            <a href="#" className="hover:text-black transition-colors">MUJER</a>
+            <a href="#" className="hover:text-black transition-colors">HOMBRE</a>
+            <a href="#" className="hover:text-black transition-colors">NIÑOS</a>
+          </div>
         </div>
-        <button 
-          onClick={() => setIsCartOpen(true)}
-          className="hover:text-black transition-colors flex items-center gap-1 relative"
-        >
-          <ShoppingBag className="w-5 h-5" />
-          {cartItems.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
-              {calculateTotalItems()}
-            </span>
-          )}
-        </button>
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.href = window.location.href}>
+          <span className="text-purple-500 font-medium">¿QUÉ BUSCAS?</span>
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sparklesGradientNav" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#5170ff" />
+                <stop offset="100%" stopColor="#ff66c4" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 22.5l-.394-1.933a2.25 2.25 0 00-1.423-1.423L12.75 18.75l1.933-.394a2.25 2.25 0 001.423-1.423L16.5 15l.394 1.933a2.25 2.25 0 001.423 1.423l1.933.394-1.933.394a2.25 2.25 0 00-1.423 1.423z"
+              fill="url(#sparklesGradientNav)"
+            />
+          </svg>
+        </div>
       </nav>
 
-      {/* Shopping Cart Full Screen View */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b">
-            <button
-              onClick={() => setIsCartOpen(false)}
-              className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
+      {/* Main Content */}
+      <main className="container mx-auto px-6 pt-12 pb-auto">
+        {/* Title */}
+        <h1 className="wide-title text-left mb-12">
+          DESCRIBE TU OUTFIT
+        </h1>
+
+        {/* Input Section */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <div className="flex gap-4 items-end border-4 border-gradient rounded-lg  focus:border-purple-400">
+            <Textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+              placeholder="Quiero un look para los días más calurosos de primavera..."
+              className="flex-1 min-h-0 p-4 border-none focus:border-none transition-colors resize-none text-indigo-700 md:text-md"
+            />
+            <Button 
+              onClick={handleSubmit}
+              disabled={isLoading || !prompt.trim()}
+              className="bg-transparent border-0 shadow-none p-0 my-auto mx-4 hover:bg-transparent focus:ring-0 focus:ring-offset-0 cursor-pointer transition-all duration-500 [&_svg]:!w-8 [&_svg]:!h-8 opacity-80 hover:opacity-100"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Volver a la tienda</span>
-            </button>
-            <h1 className="text-2xl font-bold">Tu Carrito de Compras</h1>
-            <button
-              onClick={() => setIsCartOpen(false)}
-              className="p-2 hover:bg-gray-100 rounded-full"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-
-          {/* Cart Content */}
-          <div className="container mx-auto px-6 py-8">
-            {cartItems.length === 0 ? (
-              <div className="text-center py-16">
-                <ShoppingBag className="w-24 h-24 mx-auto mb-6 text-gray-300" />
-                <h2 className="text-2xl font-semibold mb-4">Tu carrito está vacío</h2>
-                <p className="text-gray-600 mb-8">Agrega algunos productos increíbles a tu carrito</p>
-                <Button 
-                  onClick={() => setIsCartOpen(false)}
-                  className="bg-black hover:bg-gray-800 text-white px-8 py-3"
-                >
-                  Seguir Comprando
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Cart Items */}
-                <div className="lg:col-span-2">
-                  <h2 className="text-xl font-semibold mb-6">Productos en tu carrito ({calculateTotalItems()})</h2>
-                  <div className="space-y-6">
-                    {cartItems.map((item, index) => (
-                      <div key={`${item.id}-${item.size}-${index}`} className="flex gap-6 p-6 border rounded-lg">
-                        <img
-                          src={item.src}
-                          alt={item.title}
-                          className="w-32 h-32 object-cover flex-shrink-0 rounded"
-                        />
-                        <div className="flex-1 flex flex-col">
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-                              <p className="text-gray-600">Talla: {item.size}</p>
-                              <p className="font-semibold text-lg">${formatPrice(item.price)}</p>
-                            </div>
-                            <button
-                              onClick={() => handleRemoveFromCart(item.id, item.size)}
-                              className="text-gray-400 hover:text-red-500 transition-colors p-2"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
-                          </div>
-                          
-                          {/* Quantity Controls */}
-                          <div className="flex items-center justify-between mt-auto">
-                            <div className="flex items-center gap-4">
-                              <span className="font-medium">Cantidad:</span>
-                              <div className="flex items-center gap-3">
-                                <button
-                                  onClick={() => handleUpdateQuantity(item.id, item.size, item.quantity - 1)}
-                                  className="w-8 h-8 border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-100 rounded"
-                                >
-                                  -
-                                </button>
-                                <span className="text-lg font-medium w-8 text-center">{item.quantity}</span>
-                                <button
-                                  onClick={() => handleUpdateQuantity(item.id, item.size, item.quantity + 1)}
-                                  className="w-8 h-8 border border-gray-300 flex items-center justify-center text-sm hover:bg-gray-100 rounded"
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm text-gray-600">Subtotal</p>
-                              <p className="font-semibold text-lg">${formatPrice(item.price * item.quantity)}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Order Summary */}
-                <div className="lg:col-span-1">
-                  <div className="bg-gray-50 p-6 rounded-lg sticky top-6">
-                    <h2 className="text-xl font-semibold mb-6">Resumen del Pedido</h2>
-                    
-                    <div className="space-y-4 mb-6">
-                      <div className="flex justify-between text-lg font-semibold">
-                        <span>Total</span>
-                        <span>${formatPrice(calculateTotal())}</span>
-                      </div>
-                    </div>
-
-                    <Button 
-                      onClick={() => setIsCartOpen(false)}
-                      className="w-full bg-black hover:bg-gray-800 text-white py-3 font-semibold text-lg"
-                    >
-                      Seguir Comprando
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+              <svg className="w-20 h-20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="sparklesGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#5170ff" />
+                    <stop offset="100%" stopColor="#ff66c4" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 22.5l-.394-1.933a2.25 2.25 0 00-1.423-1.423L12.75 18.75l1.933-.394a2.25 2.25 0 001.423-1.423L16.5 15l.394 1.933a2.25 2.25 0 001.423 1.423l1.933.394-1.933.394a2.25 2.25 0 00-1.423 1.423z"
+                  fill="url(#sparklesGradient)"
+                />
+              </svg>
+            </Button>
           </div>
         </div>
-      )}
 
-      {/* Main Content */}
-      {!isCartOpen && (
-        <main className="container mx-auto px-6 pt-12 pb-auto">
-          {/* Title */}
-          <h1 className="wide-title text-left mb-12">
-            ARMA TU OUTFIT
-          </h1>
+        {/* Single Status Text - shows different messages based on state */}
+        <div className="mb-8">
+          <p className="text-xl text-black text-left">
+            {isLoading 
+              ? 'Estoy buscando tu outfit perfecto...'
+              : selectedItems.length > 0 
+                ? 'Encontré esto para ti, ¿qué te parece?'
+                : '¡Hola! Dime, ¿qué estás buscando?'
+            }
+          </p>
+        </div>
 
-          {/* Input Section */}
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="flex gap-4 items-end border-4 border-gradient rounded-lg focus:border-purple-400">
-              <Textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                }}
-                placeholder="Quiero un look para los días más calurosos de primavera..."
-                className="flex-1 min-h-0 p-4 border-none focus:border-none transition-colors resize-none text-indigo-700 md:text-md"
-              />
-              <Button
-                onClick={handleSubmit}
-                disabled={isLoading || !prompt.trim()}
-                className="bg-transparent border-0 shadow-none p-0 my-auto mx-4 hover:bg-transparent focus:ring-0 focus:ring-offset-0 cursor-pointer transition-all duration-500 [&_svg]:!w-8 [&_svg]:!h-8 opacity-80 hover:opacity-100"
-              >
-                <svg
-                  className="w-20 h-20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <defs>
-                    <linearGradient
-                      id="sparklesGradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="0%"
-                    >
-                      <stop offset="0%" stopColor="#5170ff" />
-                      <stop offset="100%" stopColor="#ff66c4" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 22.5l-.394-1.933a2.25 2.25 0 00-1.423-1.423L12.75 18.75l1.933-.394a2.25 2.25 0 001.423-1.423L16.5 15l.394 1.933a2.25 2.25 0 001.423 1.423l1.933.394-1.933.394a2.25 2.25 0 00-1.423 1.423z"
-                    fill="url(#sparklesGradient)"
-                  />
-                </svg>
-              </Button>
-            </div>
-
-            {/* Gender Buttons */}
-            <div className="flex justify-center gap-4 mt-6">
-              {["Mujer", "Hombre", "Unisex", "Niño"].map((gender) => (
-                <Button
-                  key={gender}
-                  onClick={() => handleGenderSelect(gender)}
-                  className={`rounded-lg px-6 py-2 font-medium border-4 border-gradient transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-lg ${
-                    selectedGender === gender
-                      ? 'bg-black text-white border-black shadow-lg scale-105'
-                      : 'bg-gray-50 text-black border-gray-300 hover:bg-gray-100'
-                  }`}
-                >
-                  {gender}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Single Status Text */}
-          <div className="mb-8">
-            <p className="text-xl text-black text-left">
-              {isLoading 
-                ? 'Estoy buscando tu outfit perfecto...'
-                : selectedItems.length > 0 
-                  ? 'Encontré esto para ti, ¿qué te parece?'
-                  : '¡Hola! Dime, ¿qué estás buscando?'
-              }
-            </p>
-          </div>
-
-          {/* Content Section */}
-          {selectedItems.length > 0 ? (
+        {/* Content Section */}
+        {selectedItems.length > 0 ? (
+          /* Selected Items Grid */
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
               {selectedItems.map((item) => (
                 <Card key={item.id} className="border-0 rounded-none shadow-none flex flex-col h-full">
                   <CardContent className="p-0 flex flex-col h-full">
                     <img
                       src={item.src}
-                      alt={item.comment}
+                      alt={item.description}
                       className="w-full aspect-square object-cover"
                     />
                     <div className="p-4 flex flex-col flex-grow">
@@ -520,7 +256,7 @@ function App() {
                         </div>
                       </div>
 
-                      {/* Add to Cart */}
+                      {/* Add to Cart Button - only show when size is selected */}
                       {selectedSizes[item.id] && (
                         <Button 
                           onClick={() => handleAddToCart(item)}
@@ -534,59 +270,25 @@ function App() {
                 </Card>
               ))}
             </div>
-          ) : (
-            <div className="w-full">
-              <div className="outfit-carousel">
-                <div className="outfit-carousel-track" ref={scrollRef}>
-                  {infiniteImages.map((image, index) => (
-                    <div key={`${image.id}-${index}`} className="outfit-image">
-                      <img
-                        src={image.src}
-                        alt={image.alt}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
+        ) : (
+          /* Outfit Carousel */
+          <div className="w-full">
+            <div className="outfit-carousel">
+              <div className="outfit-carousel-track" ref={scrollRef}>
+                {infiniteImages.map((image, index) => (
+                  <div key={`${image.id}-${index}`} className="outfit-image">
+                    <img
+                      src={image.src}
+                      alt={image.alt}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-        </main>
-      )}
-
-      {/* Estilos para el carrusel */}
-      <style jsx>{`
-        .outfit-carousel {
-          overflow: hidden;
-          position: relative;
-          width: 100%;
-        }
-        
-        .outfit-carousel-track {
-          display: flex;
-          transition: transform 0.1s linear;
-        }
-        
-        .outfit-image {
-          flex-shrink: 0;
-          width: 320px;
-        }
-        
-        .animate-fade-in {
-          animation: fadeIn 0.5s ease-in-out;
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -20px);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, 0);
-          }
-        }
-      `}</style>
+          </div>
+        )}
+      </main>
     </div>
   )
 }
