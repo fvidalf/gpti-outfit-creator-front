@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Menu, X, ShoppingBag, ArrowLeft, CheckCircle } from "lucide-react"
+import { Heart } from "lucide-react"
 
 // Import outfit sample images
 import outfit1 from '@/assets/samples/outfit1.png'
