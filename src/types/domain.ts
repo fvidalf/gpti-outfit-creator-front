@@ -1,5 +1,12 @@
 export type GenderFilter = "male" | "female" | "any"
 
+export interface GenerateOutfitRequest {
+  prompt: string
+  gender?: GenderFilter
+  sessionId?: string
+  lockedItems?: string[]
+}
+
 export interface OutfitSuggestion {
   itemId: string
   itemName: string
@@ -20,6 +27,17 @@ export interface CatalogItem {
   price: number
   sizes: string[]
   photo_url: string
+  tags?: string[]
+}
+
+export interface ItemDetail {
+  item_id: string
+  name: string
+  price: number
+  sizes: string[]
+  photo_url: string
+  gender?: GenderFilter[]
+  category?: string
   tags?: string[]
 }
 

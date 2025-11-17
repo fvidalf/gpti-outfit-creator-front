@@ -6,18 +6,21 @@ import { OutfitGrid } from "@/components/OutfitGrid"
 import { PromptForm } from "@/components/PromptForm"
 import { StatusMessage } from "@/components/StatusMessage"
 import { SuccessToast } from "@/components/SuccessToast"
-import { mockCatalog, mockOutfitCarousel, mockOutfitResponse } from "@/mocks/outfit"
+import { mockCatalog, mockOutfitCarousel } from "@/mocks/outfit"
 import type {
   CartLineItem,
   GenderFilter,
+  ItemDetail,
   LikedItem,
   OutfitResponse,
   ProductCardData,
 } from "@/types/domain"
 import { CartView } from "@/views/CartView"
 import { FavoritesView } from "@/views/FavoritesView"
+import { apiService } from "@/lib/api"
 
 type ViewState = "main" | "cart" | "favorites"
+const mockCatalogMap = new Map(mockCatalog.map((item) => [item.item_id, item]))
 
 function App() {
   const [prompt, setPrompt] = useState("")
@@ -30,14 +33,13 @@ function App() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [recentlyLiked, setRecentlyLiked] = useState<Record<string, boolean>>({})
+  const [itemDetailsById, setItemDetailsById] = useState<Record<string, ItemDetail>>({})
 
   const productCards: ProductCardData[] = useMemo(() => {
     if (!outfitResponse) return []
 
-    const catalogMap = new Map(mockCatalog.map((item) => [item.item_id, item]))
-
     return outfitResponse.outfitSuggestions.map((suggestion) => {
-      const catalog = catalogMap.get(suggestion.itemId)
+      const catalog = itemDetailsById[suggestion.itemId] || mockCatalogMap.get(suggestion.itemId)
       return {
         id: suggestion.itemId,
         name: suggestion.itemName || catalog?.name || suggestion.itemId,
@@ -47,7 +49,7 @@ function App() {
         comment: suggestion.comment,
       }
     })
-  }, [outfitResponse])
+  }, [itemDetailsById, outfitResponse])
 
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0)
 
@@ -193,13 +195,32 @@ function App() {
     if (!prompt.trim()) return
     setIsLoading(true)
 
-    // TODO: Replace with real API call to /ai/generate-outfit when backend is connected
-    setTimeout(() => {
-      setOutfitResponse(mockOutfitResponse)
+    try {
+      const outfit = await apiService.generateOutfit({
+        prompt,
+        gender: gender || undefined,
+      })
+
+      const itemIds = outfit.outfitSuggestions.map((item) => item.itemId)
+      const fetchedCatalog = await apiService.fetchItemsByIds(itemIds)
+
+      setItemDetailsById((prev) => {
+        const next = { ...prev }
+        fetchedCatalog.forEach((item) => {
+          next[item.item_id] = item
+        })
+        return next
+      })
+
+      setOutfitResponse(outfit)
       setSelectedSizes({})
       setView("main")
+    } catch (error) {
+      console.error("Failed to generate outfit", error)
+      alert("No pudimos generar el outfit. Por favor intenta nuevamente.")
+    } finally {
       setIsLoading(false)
-    }, 1200)
+    }
   }
 
   const triggerToast = () => {
