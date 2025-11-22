@@ -12,6 +12,9 @@ interface FiltersBarProps {
   gender: GenderFilter | ""
   genderOptions?: GenderFilter[]
   onSelectGender: (gender: GenderFilter) => void
+  priceMin: string
+  priceMax: string
+  onPriceChange: (min: string, max: string) => void
 }
 
 const buttonBase =
@@ -29,10 +32,14 @@ export function FiltersBar({
   gender,
   genderOptions,
   onSelectGender,
+  priceMin,
+  priceMax,
+  onPriceChange,
 }: FiltersBarProps) {
   const [showFilters, setShowFilters] = useState(true)
   const [showCategories, setShowCategories] = useState(false)
   const [showSizes, setShowSizes] = useState(false)
+  const [showPrice, setShowPrice] = useState(false)
 
   const genderList: GenderFilter[] = useMemo(
     () => (genderOptions?.length ? genderOptions : ["female", "male", "any", "kids"]),
@@ -91,6 +98,43 @@ export function FiltersBar({
               )}
             </div>
           )}
+
+          <div className="space-y-2">
+            <button
+              onClick={() => setShowPrice((v) => !v)}
+              className="flex items-center gap-2 text-sm font-semibold text-gray-900 hover:text-black"
+            >
+              Precio {showPrice ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+            {showPrice && (
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <label className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-gray-700 uppercase">Min</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min="0"
+                    value={priceMin}
+                    onChange={(e) => onPriceChange(e.target.value, priceMax)}
+                    className="w-28 border-b border-gray-300 focus:border-black focus:outline-none bg-transparent px-1 py-1 text-sm"
+                    placeholder="0"
+                  />
+                </label>
+                <label className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-gray-700 uppercase">Max</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min="0"
+                    value={priceMax}
+                    onChange={(e) => onPriceChange(priceMin, e.target.value)}
+                    className="w-28 border-b border-gray-300 focus:border-black focus:outline-none bg-transparent px-1 py-1 text-sm"
+                    placeholder="∞"
+                  />
+                </label>
+              </div>
+            )}
+          </div>
 
           {sizeSchemas.length > 0 && (
             <div className="space-y-2">

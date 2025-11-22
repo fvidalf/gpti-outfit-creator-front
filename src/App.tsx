@@ -39,6 +39,8 @@ function App() {
   const [filtersData, setFiltersData] = useState<FiltersResponse | null>(null)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedSizeFilters, setSelectedSizeFilters] = useState<Record<string, string[]>>({})
+  const [priceMin, setPriceMin] = useState<string>("")
+  const [priceMax, setPriceMax] = useState<string>("")
 
   const productCards: ProductCardData[] = useMemo(() => {
     if (!outfitResponse) return []
@@ -245,6 +247,8 @@ function App() {
         gender: gender || undefined,
         categories: selectedCategories.length ? selectedCategories : undefined,
         sizeFilters: Object.keys(selectedSizeFilters).length ? selectedSizeFilters : undefined,
+        priceMin: priceMin ? Number(priceMin) : undefined,
+        priceMax: priceMax ? Number(priceMax) : undefined,
       }
 
       const outfit = await apiService.generateOutfit(payload)
@@ -339,6 +343,12 @@ function App() {
             gender={gender}
             genderOptions={filtersData?.genders}
             onSelectGender={setGender}
+            priceMin={priceMin}
+            priceMax={priceMax}
+            onPriceChange={(min, max) => {
+              setPriceMin(min)
+              setPriceMax(max)
+            }}
           />
 
           <StatusMessage
