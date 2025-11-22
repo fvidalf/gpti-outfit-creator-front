@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react"
-import { GenderSelector } from "@/components/GenderSelector"
+import { useEffect, useMemo, useState } from "react"
 import { NavigationBar } from "@/components/NavigationBar"
 import { OutfitCarousel } from "@/components/OutfitCarousel"
 import { OutfitGrid } from "@/components/OutfitGrid"
+import { FiltersBar } from "@/components/FiltersBar"
 import { PromptForm } from "@/components/PromptForm"
 import { StatusMessage } from "@/components/StatusMessage"
 import { SuccessToast } from "@/components/SuccessToast"
@@ -10,10 +10,12 @@ import { mockCatalog, mockOutfitCarousel } from "@/mocks/outfit"
 import type {
   CartLineItem,
   GenderFilter,
+  FiltersResponse,
   ItemDetail,
   LikedItem,
   OutfitResponse,
   ProductCardData,
+  SizeSchemaOption,
 } from "@/types/domain"
 import { CartView } from "@/views/CartView"
 import { FavoritesView } from "@/views/FavoritesView"
@@ -34,6 +36,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [recentlyLiked, setRecentlyLiked] = useState<Record<string, boolean>>({})
   const [itemDetailsById, setItemDetailsById] = useState<Record<string, ItemDetail>>({})
+  const [filtersData, setFiltersData] = useState<FiltersResponse | null>(null)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedSizeFilters, setSelectedSizeFilters] = useState<Record<string, string[]>>({})
 
   const productCards: ProductCardData[] = useMemo(() => {
     if (!outfitResponse) return []
@@ -54,6 +59,31 @@ function App() {
       }
     })
   }, [itemDetailsById, outfitResponse])
+
+  const visibleSizeSchemas: SizeSchemaOption[] = useMemo(() => {
+    const schemas = filtersData?.sizeSchemas ?? []
+    if (!gender) return schemas
+    const isKids = gender === "kids"
+    return schemas.filter((schema) => (isKids ? schema.id.startsWith("kids_") : !schema.id.startsWith("kids_")))
+  }, [filtersData, gender])
+
+  useEffect(() => {
+    apiService
+      .fetchFilters()
+      .then((data) => setFiltersData(data))
+      .catch((err) => console.error("Failed to fetch filters", err))
+  }, [])
+
+  useEffect(() => {
+    if (!gender) return
+    const isKids = gender === "kids"
+    setSelectedSizeFilters((prev) => {
+      const nextEntries = Object.entries(prev).filter(([schemaId]) =>
+        isKids ? schemaId.startsWith("kids_") : !schemaId.startsWith("kids_"),
+      )
+      return Object.fromEntries(nextEntries)
+    })
+  }, [gender])
 
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0)
 
@@ -210,10 +240,14 @@ function App() {
     setIsLoading(true)
 
     try {
-      const outfit = await apiService.generateOutfit({
+      const payload = {
         prompt,
         gender: gender || undefined,
-      })
+        categories: selectedCategories.length ? selectedCategories : undefined,
+        sizeFilters: Object.keys(selectedSizeFilters).length ? selectedSizeFilters : undefined,
+      }
+
+      const outfit = await apiService.generateOutfit(payload)
 
       const itemIds = outfit.outfitSuggestions.map((item) => item.itemId)
       const fetchedCatalog = await apiService.fetchItemsByIds(itemIds)
@@ -278,7 +312,34 @@ function App() {
           <h1 className="wide-title text-left mb-12">ARMA TU OUTFIT</h1>
 
           <PromptForm prompt={prompt} isLoading={isLoading} onPromptChange={setPrompt} onSubmit={handleSubmit} />
-          <GenderSelector selectedGender={gender} onSelect={setGender} />
+          <FiltersBar
+            categories={filtersData?.categories ?? []}
+            selectedCategories={selectedCategories}
+            onToggleCategory={(category) =>
+              setSelectedCategories((prev) =>
+                prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+              )
+            }
+            sizeSchemas={visibleSizeSchemas}
+            selectedSizeFilters={selectedSizeFilters}
+            onToggleSize={(schemaId, size) =>
+              setSelectedSizeFilters((prev) => {
+                const current = prev[schemaId] ?? []
+                const exists = current.includes(size)
+                const nextSizes = exists ? current.filter((s) => s !== size) : [...current, size]
+                const next = { ...prev }
+                if (nextSizes.length) {
+                  next[schemaId] = nextSizes
+                } else {
+                  delete next[schemaId]
+                }
+                return next
+              })
+            }
+            gender={gender}
+            genderOptions={filtersData?.genders}
+            onSelectGender={setGender}
+          />
 
           <StatusMessage
             isLoading={isLoading}

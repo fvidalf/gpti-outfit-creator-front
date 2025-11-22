@@ -3,6 +3,7 @@ import type {
   GenerateOutfitRequest,
   ItemDetail,
   OutfitResponse,
+  FiltersResponse,
 } from "@/types/domain"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"
@@ -69,6 +70,10 @@ class ApiService {
       method: "POST",
       body: JSON.stringify({ item_ids: itemIds }),
     })
+  }
+
+  async fetchFilters(): Promise<FiltersResponse> {
+    return this.makeRequest<FiltersResponse>("/filters")
   }
 }
 

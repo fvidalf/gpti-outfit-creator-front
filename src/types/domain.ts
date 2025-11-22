@@ -1,9 +1,13 @@
-export type GenderFilter = "male" | "female" | "any"
+export type GenderFilter = "male" | "female" | "kids" | "any"
 
 export interface GenerateOutfitRequest {
   prompt: string
   gender?: GenderFilter
   sessionId?: string
+  categories?: string[]
+  priceMin?: number
+  priceMax?: number
+  sizeFilters?: Record<string, string[]>
   lockedItems?: string[]
 }
 
@@ -58,6 +62,18 @@ export interface ProductCardData {
   comment?: string
   availableSizes: string[]
   unavailableSizes: string[]
+}
+
+export interface SizeSchemaOption {
+  id: string
+  label: string
+  sizes: string[]
+}
+
+export interface FiltersResponse {
+  categories: string[]
+  genders: GenderFilter[]
+  sizeSchemas: SizeSchemaOption[]
 }
 
 export interface CartLineItem {

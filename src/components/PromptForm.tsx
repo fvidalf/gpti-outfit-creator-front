@@ -10,7 +10,7 @@ interface PromptFormProps {
 
 export function PromptForm({ prompt, isLoading, onPromptChange, onSubmit }: PromptFormProps) {
   return (
-    <div className="max-w-4xl mx-auto mb-8">
+    <div className="max-w-5xl mx-auto mb-4">
       <div className="flex gap-4 items-end border-4 border-gradient rounded-lg focus:border-purple-400">
         <Textarea
           value={prompt}
