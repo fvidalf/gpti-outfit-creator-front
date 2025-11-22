@@ -7,9 +7,11 @@ interface StatusMessageProps {
 export function StatusMessage({ isLoading, hasResults, conversationalMessage }: StatusMessageProps) {
   const text = isLoading
     ? "Estoy buscando tu outfit perfecto..."
-    : hasResults
-      ? conversationalMessage || "Encontré esto para ti, ¿qué te parece?"
-      : "¡Hola! Dime, ¿qué estás buscando?"
+    : conversationalMessage
+      ? conversationalMessage
+      : hasResults
+        ? "Encontré esto para ti, ¿qué te parece?"
+        : "¡Hola! Dime, ¿qué estás buscando?"
 
   return (
     <div className="mb-8">

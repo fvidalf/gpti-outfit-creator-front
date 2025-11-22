@@ -362,39 +362,6 @@ function App() {
           )}
         </main>
       )}
-
-      <style>{`
-        .outfit-carousel {
-          overflow: hidden;
-          position: relative;
-          width: 100%;
-        }
-        
-        .outfit-carousel-track {
-          display: flex;
-          transition: transform 0.1s linear;
-        }
-        
-        .outfit-image {
-          flex-shrink: 0;
-          width: 320px;
-        }
-        
-        .animate-fade-in {
-          animation: fadeIn 0.5s ease-in-out;
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translate(-50%, -20px);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, 0);
-          }
-        }
-      `}</style>
     </div>
   )
 }
