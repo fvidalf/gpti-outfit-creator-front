@@ -43,19 +43,30 @@ export function OutfitGrid({
                 <div className="mt-4">
                   <p className="text-sm font-medium mb-2 uppercase">Talla</p>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {item.sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => onSelectSize(item.id, size)}
-                        className={`px-3 py-1 border text-sm font-medium transition-colors ${
-                          selectedSizes[item.id] === size
-                            ? "bg-black text-white border-black"
-                            : "bg-white text-black border-gray-300 hover:border-black"
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                    {item.sizes.map((size) => {
+                      const isUnavailable = item.unavailableSizes.includes(size)
+                      const isAvailable = item.availableSizes.length ? item.availableSizes.includes(size) : !isUnavailable
+                      const isSelected = selectedSizes[item.id] === size
+                      const disabled = !isAvailable || isUnavailable
+
+                      return (
+                        <button
+                          key={size}
+                          onClick={() => onSelectSize(item.id, size)}
+                          disabled={disabled}
+                          aria-disabled={disabled}
+                          className={`px-3 py-1 border text-sm font-medium transition-colors ${
+                            disabled
+                              ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                              : isSelected
+                                ? "bg-black text-white border-black"
+                                : "bg-white text-black border-gray-300 hover:border-black"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 

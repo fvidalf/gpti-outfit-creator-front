@@ -40,6 +40,8 @@ function App() {
 
     return outfitResponse.outfitSuggestions.map((suggestion) => {
       const catalog = itemDetailsById[suggestion.itemId] || mockCatalogMap.get(suggestion.itemId)
+      const availableSizes = catalog?.availableSizes ?? catalog?.sizes ?? []
+      const unavailableSizes = catalog?.unavailableSizes ?? []
       return {
         id: suggestion.itemId,
         name: suggestion.itemName || catalog?.name || suggestion.itemId,
@@ -47,6 +49,8 @@ function App() {
         sizes: catalog?.sizes ?? [],
         photoUrl: catalog?.photo_url || "",
         comment: suggestion.comment,
+        availableSizes,
+        unavailableSizes,
       }
     })
   }, [itemDetailsById, outfitResponse])
@@ -64,6 +68,11 @@ function App() {
     const size = selectedSizes[item.id]
     if (!size) {
       alert("Por favor selecciona una talla")
+      return
+    }
+
+    if (item.unavailableSizes.includes(size)) {
+      alert("Esa talla no está disponible")
       return
     }
 
@@ -96,6 +105,11 @@ function App() {
     const size = selectedSizes[item.id]
     if (!size) {
       alert("Por favor selecciona una talla")
+      return
+    }
+
+    if (item.unavailableSizes.includes(size)) {
+      alert("Esa talla no está disponible")
       return
     }
 

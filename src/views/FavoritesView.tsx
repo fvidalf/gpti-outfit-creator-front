@@ -48,6 +48,7 @@ export function FavoritesView({ items, onClose, onRemove, onMoveToCart }: Favori
                   <div className="p-4 flex flex-col flex-grow">
                     <div className="flex-grow">
                       <h3 className="font-normal text-sm uppercase">{item.name}</h3>
+                      <p className="text-gray-600 text-sm">Talla: {item.size}</p>
                       <h3 className="font-bold text-sm mb-2">${formatPrice(item.price)}</h3>
                     </div>
 

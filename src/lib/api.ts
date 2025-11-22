@@ -6,6 +6,24 @@ import type {
 } from "@/types/domain"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"
+const SESSION_STORAGE_KEY = "oc-session-id"
+
+const ensureSessionId = (): string => {
+  const fallbackId = () => `session_${globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2)}`
+
+  if (typeof window === "undefined") return fallbackId()
+
+  try {
+    const existing = localStorage.getItem(SESSION_STORAGE_KEY)
+    if (existing) return existing
+
+    const newId = fallbackId()
+    localStorage.setItem(SESSION_STORAGE_KEY, newId)
+    return newId
+  } catch {
+    return fallbackId()
+  }
+}
 
 class ApiService {
   private baseUrl: string
@@ -34,9 +52,10 @@ class ApiService {
   }
 
   async generateOutfit(payload: GenerateOutfitRequest): Promise<OutfitResponse> {
+    const sessionId = payload.sessionId ?? ensureSessionId()
     return this.makeRequest<OutfitResponse>("/ai/generate-outfit", {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, sessionId }),
     })
   }
 

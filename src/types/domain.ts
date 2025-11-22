@@ -26,6 +26,10 @@ export interface CatalogItem {
   category: string
   price: number
   sizes: string[]
+  sizingSchema?: string
+  availability?: Record<string, number>
+  availableSizes?: string[]
+  unavailableSizes?: string[]
   photo_url: string
   tags?: string[]
 }
@@ -35,6 +39,10 @@ export interface ItemDetail {
   name: string
   price: number
   sizes: string[]
+  sizingSchema?: string
+  availability?: Record<string, number>
+  availableSizes?: string[]
+  unavailableSizes?: string[]
   photo_url: string
   gender?: GenderFilter[]
   category?: string
@@ -48,6 +56,8 @@ export interface ProductCardData {
   sizes: string[]
   photoUrl: string
   comment?: string
+  availableSizes: string[]
+  unavailableSizes: string[]
 }
 
 export interface CartLineItem {
