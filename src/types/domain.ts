@@ -8,7 +8,7 @@ export interface GenerateOutfitRequest {
   priceMin?: number
   priceMax?: number
   sizeFilters?: Record<string, string[]>
-  lockedItems?: string[]
+  lockedItemIds?: string[]
 }
 
 export interface OutfitSuggestion {

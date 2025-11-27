@@ -14,17 +14,18 @@ interface FavoritesViewProps {
 export function FavoritesView({ items, onClose, onRemove, onMoveToCart }: FavoritesViewProps) {
   return (
     <div className="fixed inset-0 z-30 bg-white overflow-y-auto" style={{ top: "64px" }}>
-      <div className="flex items-center justify-between p-6">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+      <div className="flex items-center p-6 gap-4">
+        <button
+          onClick={onClose}
+          className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div className="flex items-center gap-3 flex-1">
+          <h1 className="wide-title text-3xl uppercase text-left">Mis Prendas Favoritas</h1>
+          <Heart className="w-6 h-6" />
         </div>
-        <h1 className="text-2xl font-bold">Mis Prendas Favoritas ❤️</h1>
-        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+        <button onClick={onClose} className="p-2 hover:bg-gray-100 ml-auto">
           <X className="w-6 h-6" />
         </button>
       </div>
@@ -35,7 +36,7 @@ export function FavoritesView({ items, onClose, onRemove, onMoveToCart }: Favori
             <Heart className="w-24 h-24 mx-auto mb-6 text-gray-300" />
             <h2 className="text-2xl font-semibold mb-4">No tienes prendas favoritas</h2>
             <p className="text-gray-600 mb-8">Agrega algunas prendas increíbles a tus favoritos</p>
-            <Button onClick={onClose} className="bg-black hover:bg-gray-800 text-white px-8 py-3">
+            <Button onClick={onClose} className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-none">
               Seguir Comprando
             </Button>
           </div>

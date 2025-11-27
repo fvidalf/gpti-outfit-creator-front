@@ -1,3 +1,4 @@
+import { Heart, Lock, Unlock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { formatPrice } from "@/lib/format"
@@ -7,9 +8,11 @@ interface OutfitGridProps {
   items: ProductCardData[]
   selectedSizes: Record<string, string>
   recentlyLiked: Record<string, boolean>
+  lockedItemIds: string[]
   onSelectSize: (itemId: string, size: string) => void
   onAddToCart: (item: ProductCardData) => void
   onAddToLiked: (item: ProductCardData) => void
+  onToggleLock: (itemId: string) => void
   isItemLiked: (itemId: string, size: string) => boolean
 }
 
@@ -17,9 +20,11 @@ export function OutfitGrid({
   items,
   selectedSizes,
   recentlyLiked,
+  lockedItemIds,
   onSelectSize,
   onAddToCart,
   onAddToLiked,
+  onToggleLock,
   isItemLiked,
 }: OutfitGridProps) {
   return (
@@ -28,6 +33,7 @@ export function OutfitGrid({
         const selectedSize = selectedSizes[item.id]
         const liked = selectedSize ? isItemLiked(item.id, selectedSize) : false
         const isRecentlyLiked = recentlyLiked[item.id]
+        const isLocked = lockedItemIds.includes(item.id)
 
         return (
           <Card key={item.id} className="border-0 rounded-none shadow-none flex flex-col h-full">
@@ -70,27 +76,38 @@ export function OutfitGrid({
                   </div>
                 </div>
 
-                {selectedSize && (
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => onAddToCart(item)}
-                      className="flex-1 bg-black hover:bg-gray-800 text-white rounded-none py-3 font-medium uppercase tracking-wide"
-                    >
-                      Agregar al carrito
-                    </Button>
-                    <Button
-                      onClick={() => onAddToLiked(item)}
-                      className={`rounded-none py-3 font-medium transition-all duration-300 ${
-                        liked || isRecentlyLiked
-                          ? "bg-red-500 text-white border-red-500 hover:bg-red-600"
-                          : "bg-white text-red-500 border-red-500 hover:bg-red-50"
-                      }`}
-                      variant="outline"
-                    >
-                      ❤️
-                    </Button>
-                  </div>
-                )}
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => onAddToCart(item)}
+                    disabled={!selectedSize}
+                    className="flex-1 bg-black hover:bg-gray-800 text-white rounded-none py-3 font-medium uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Agregar al carrito
+                  </Button>
+                  <Button
+                    onClick={() => onAddToLiked(item)}
+                    disabled={!selectedSize}
+                    className={`rounded-none py-3 font-medium transition-all duration-300 ${
+                      liked || isRecentlyLiked
+                        ? "bg-red-500 text-white border-red-500 hover:bg-red-600"
+                        : "bg-white text-red-500 border-red-500 hover:bg-red-50"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    variant="outline"
+                  >
+                    <Heart className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    onClick={() => onToggleLock(item.id)}
+                    className={`rounded-none py-3 font-medium transition-all duration-300 ${
+                      isLocked
+                        ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
+                        : "bg-white text-blue-500 border-blue-500 hover:bg-blue-50"
+                    }`}
+                    variant="outline"
+                  >
+                    {isLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -31,8 +31,10 @@ function App() {
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({})
   const [cartItems, setCartItems] = useState<CartLineItem[]>([])
   const [likedItems, setLikedItems] = useState<LikedItem[]>([])
+  const [lockedItemIds, setLockedItemIds] = useState<string[]>([])
   const [view, setView] = useState<ViewState>("main")
   const [showSuccess, setShowSuccess] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false)
   const [recentlyLiked, setRecentlyLiked] = useState<Record<string, boolean>>({})
   const [itemDetailsById, setItemDetailsById] = useState<Record<string, ItemDetail>>({})
@@ -96,6 +98,8 @@ function App() {
     setSelectedSizes((prev) => ({ ...prev, [itemId]: size }))
   }
 
+  const getAvailableStock = (itemId: string, size: string) => itemDetailsById[itemId]?.availability?.[size]
+
   const handleAddToCart = (item: ProductCardData) => {
     const size = selectedSizes[item.id]
     if (!size) {
@@ -108,7 +112,14 @@ function App() {
       return
     }
 
+    const stock = getAvailableStock(item.id, size)
     const existingItem = cartItems.find((cartItem) => cartItem.itemId === item.id && cartItem.size === size)
+    const nextQuantity = (existingItem?.quantity ?? 0) + 1
+
+    if (stock !== undefined && nextQuantity > stock) {
+      triggerToast(`Solo hay ${stock} unidades disponibles en talla ${size}.`)
+      return
+    }
 
     if (existingItem) {
       setCartItems((prev) =>
@@ -176,6 +187,15 @@ function App() {
       return
     }
 
+    const stock = getAvailableStock(itemId, size)
+    if (stock !== undefined && newQuantity > stock) {
+      triggerToast(`Solo hay ${stock} unidades disponibles en talla ${size}.`)
+      setCartItems((prev) =>
+        prev.map((item) => (item.itemId === itemId && item.size === size ? { ...item, quantity: stock } : item)),
+      )
+      return
+    }
+
     setCartItems((prev) =>
       prev.map((item) =>
         item.itemId === itemId && item.size === size ? { ...item, quantity: newQuantity } : item,
@@ -205,6 +225,11 @@ function App() {
     )
 
     if (existing) {
+      const stock = getAvailableStock(likedItem.itemId, likedItem.size)
+      if (stock !== undefined && existing.quantity + 1 > stock) {
+        triggerToast(`Solo hay ${stock} unidades disponibles en talla ${likedItem.size}.`)
+        return
+      }
       setCartItems((prev) =>
         prev.map((cartItem) =>
           cartItem.itemId === likedItem.itemId && cartItem.size === likedItem.size
@@ -213,6 +238,11 @@ function App() {
         ),
       )
     } else {
+      const stock = getAvailableStock(likedItem.itemId, likedItem.size)
+      if (stock !== undefined && stock < 1) {
+        triggerToast(`No hay stock disponible en talla ${likedItem.size}.`)
+        return
+      }
       const newItem: CartLineItem = {
         itemId: likedItem.itemId,
         name: likedItem.name,
@@ -233,8 +263,23 @@ function App() {
     setGender("")
     setOutfitResponse(null)
     setSelectedSizes({})
+    setLockedItemIds([])
+    setSuccessMessage(undefined)
     setView("main")
     setIsLoading(false)
+  }
+
+  const handleToggleLock = (itemId: string) => {
+    setLockedItemIds((prev) => {
+      const isLocked = prev.includes(itemId)
+      const next = isLocked ? prev.filter((id) => id !== itemId) : [...prev, itemId]
+      triggerToast(
+        isLocked
+          ? "Prenda desbloqueada: ya no se fijará en tus próximos outfits."
+          : "Prenda bloqueada: la incluiremos automáticamente en la próxima recomendación.",
+      )
+      return next
+    })
   }
 
   const handleSubmit = async () => {
@@ -249,6 +294,7 @@ function App() {
         sizeFilters: Object.keys(selectedSizeFilters).length ? selectedSizeFilters : undefined,
         priceMin: priceMin ? Number(priceMin) : undefined,
         priceMax: priceMax ? Number(priceMax) : undefined,
+        lockedItemIds: lockedItemIds.length ? lockedItemIds : undefined,
       }
 
       const outfit = await apiService.generateOutfit(payload)
@@ -275,14 +321,15 @@ function App() {
     }
   }
 
-  const triggerToast = () => {
+  const triggerToast = (message?: string) => {
+    setSuccessMessage(message)
     setShowSuccess(true)
     setTimeout(() => setShowSuccess(false), 3000)
   }
 
   return (
     <div className="min-h-screen bg-white">
-      <SuccessToast visible={showSuccess} />
+      <SuccessToast visible={showSuccess} message={successMessage} />
 
       <NavigationBar
         cartCount={cartCount}
@@ -308,6 +355,7 @@ function App() {
           onUpdateQuantity={handleUpdateQuantity}
           onMoveToLiked={handleMoveToLikedFromCart}
           onOpenFavorites={() => setView("favorites")}
+          itemDetailsById={itemDetailsById}
         />
       )}
 
@@ -362,9 +410,11 @@ function App() {
               items={productCards}
               selectedSizes={selectedSizes}
               recentlyLiked={recentlyLiked}
+              lockedItemIds={lockedItemIds}
               onSelectSize={handleSelectSize}
               onAddToCart={handleAddToCart}
               onAddToLiked={handleAddToLiked}
+              onToggleLock={handleToggleLock}
               isItemLiked={isItemLiked}
             />
           ) : (

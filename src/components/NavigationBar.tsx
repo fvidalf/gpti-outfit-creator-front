@@ -1,5 +1,4 @@
-import { ShoppingBag } from "lucide-react"
-import { Menu } from "lucide-react"
+import { Heart, Menu, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface NavigationBarProps {
@@ -44,13 +43,13 @@ export function NavigationBar({
             </svg>
             <span className="text-purple-500 font-medium">¿QUÉ BUSCAS?</span>
           </button>
-          <Button
-            variant="ghost"
-            className="text-purple-500 font-medium p-0 hover:text-purple-700"
-            onClick={onOpenFavorites}
-          >
-            ❤️
-          </Button>
+        <Button
+          variant="ghost"
+          className="text-purple-500 font-medium p-0 hover:text-purple-700"
+          onClick={onOpenFavorites}
+        >
+          <Heart className="w-5 h-5" />
+        </Button>
         </div>
       </div>
       <button
